@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+
+
+<html>
+
+<title>MERCURY</title>
+<head>
+    <meta charset="utf-8"/>
+    <style type="text/css">
+        table { /*Скрипт относительно таблицы*/
+            width: 1200px; /*Ширина таблицы*/
+            border-collapse:collapse; /*Убираем двойные линии между ячейками таблицы*/
+            background-color:#ffcc33; /*Задает таблице фоновое изображение, если при заданном фоне для всей таблицы, задать фон для ряда или ячейки, тогда этот ряд или ячейка будут иметь фон отличный от всей таблицы*/
+            border-width:3px; /*Толщина рамки таблицы в пикселях*/
+            border-style:solid; /*Рамка таблицы сплошная*/
+            border-color:#000000; /*Цвет рамки таблицы*/
+        }
+        td { /*Скрипт относительно ячейки таблицы*/
+            border:1px solid black; /*Рамка у ячейки таблицы сплошная*/
+        }
+
+
+
+
+
+    </style>
+
+</head>
+
+
+
+<body style="background-color: #393939">
+
+
+
+
+<div id="start" style="width: 1200px;">
+    <h1 style="color: white" align="center">Расчет света по подразделениям. </h1>
+
+
+    <script>
+        /*style="transform: rotate(-20grad);transform-origin:0 0" */
+
+
+
+        mon=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь']
+        mer=["Основной","Сервис","Соколов","Кафе","Окна"]
+        /*массив с показателями счетчика света общий-сервис-соколов-кафе-окна*/
+        /*Январь 0 строка*/
+        debugger
+        svet=
+            [
+
+
+                [109356,73346, 21863, 16891, 8174],
+                [110448,74185, 22148, 16953, 8348]
+
+            ]
+
+        /*опредиляем длину массива*/
+        dlina=svet.length-1
+        /*Тариф света грн - квитанция- внутреняя погрешность счетчиков  - погрешность хоек */
+        rashodi=
+            [
+
+                [2.72,4,1,2],
+                [2.72,4,1,2],
+
+            ];
+
+
+        /*Тариф света*/
+        tarif=rashodi[dlina][0]
+        /* вычисляем количество киловат потребленнного света по подразделениям и заносим их в переменные и массив*/
+        mercury=[];
+        mercury[0]=allPower=svet[dlina][0]-svet[dlina-1][0]
+        mercury[2]=sokolov=svet[dlina][2]-svet[dlina-1][2]
+        mercury[1]=service=(svet[dlina][1]-svet[dlina-1][1])-sokolov
+        mercury[3]=kafe=svet[dlina][3]-svet[dlina-1][3]
+        mercury[4]=okna=svet[dlina][4]-svet[dlina-1][4]
+        /*Проверяем погрешность счетчиков допустимый 1% от всего обьема плюс проверка на отрицательный показатель*/
+        raz=sokolov+service+kafe+okna
+        raz=allPower-raz
+        console.log(raz)
+        if (raz<=0) {raz=1}
+        console.log(raz)
+        /*Расчет общих расходов */
+        rashodiT=rashodi[dlina][2]+rashodi[dlina][3] /*слаживаем киловаты погрешности  с массива расходы 3-4*/
+        rashodiT=rashodiT*tarif
+        rashodiT=Math.round(rashodiT*10)/10
+        rashodiT=rashodiT+rashodi[dlina][1]
+        rashodiT=Math.ceil(rashodiT)
+
+        /*Рисуем таблицу*/
+
+
+
+        procR = []
+
+        i = 0
+        j = 0
+        a = 0
+        document.write('<table border="1" >')
+        for (i = 0; i < 8; i++) {
+            document.write('<tr>');
+            for (j = 0; j < 5; j++) {
+                switch (i) {
+                    case 2:
+                        document.write('<td align="center">' + '<h2>' + mer[j] + '</td>');
+                        break             /*первая строка таблицы перечень подразделений*/
+                    case 3:
+                        document.write('<td>' + mon[dlina - 1] + ' - ' + svet[dlina - 1][j] + '</td>');
+                        break    /*показания счетчиков с пердыдущего месяца*/
+                    case 4:
+                        document.write('<td>' + mon[dlina] + ' - ' + svet[dlina][j] + '</td>');
+                        break        /*показания счетчиков текущего месяца*/
+                    case 5:
+                        document.write('<td>' + 'Разница - ' + mercury[j] + ' кВт' + '</td>');
+                        break         /*Разница в показаниях */
+                    case 6:
+                        var a = ((mercury[j]) * 100) / allPower /*процентное потребление по подразделениям от общего потребления*/
+
+                        a = Math.round(a * 10) / 10
+                        document.writeln('<td>' + a + '  %' + '</td>')
+                        procR[j] = Math.round(a * 10) / 10
+                        break
+                    case 7:
+                        var a = mercury[j] /* расчет света по подразделениям*/
+                        y = rashodiT
+                        a = a * tarif
+                        a = Math.round(a * 10) / 10
+                        document.write('<td style="color: orangered"; align="center">' + a + 'грн. + ')
+                        if (j > 0) {
+                            y = rashodiT * procR[j]
+                            y = y / 100;
+                            y = Math.round(y * 10) / 10;
+                        }
+
+                        if (j == 1) {  //Расчет сервиса на 3 человека
+                            a = a / 3
+                            a = Math.round(a * 10) / 10
+                            document.write(':- ' + a + ' грн.')
+                            y = y / 3
+                            y = Math.round(y * 10) / 10
+                        }
+
+                        a = a + y
+                        a = Math.round(a * 10) / 10
+                        document.write(+y + 'грн. = ' + a)
+                        break
+                }
+            }
+            document.write('</tr>')
+        }
+        document.write('<tr>')
+        document.write('<td>' + 'Погрешность счетчиков - ' + rashodi[dlina][2] + 'кВт.' + '</td>')
+        document.write('</tr>')
+
+
+        document.write('<tr>')
+        document.write('<td>' + 'Тариф - ' + rashodi[dlina][0] + 'грн.' + '</td>')
+        document.write('</tr>')
+
+        document.write('<tr>')
+        document.write('<td>' + 'Погрешность ХОЕК - ' + rashodi[dlina][3] + 'кВт.' + '</td>')
+        document.write('</tr>')
+
+
+        document.write('<tr>')
+        document.write('<td>' + 'Квитанция - ' + rashodi[dlina][1] + 'грн.' + '</td>')
+        document.write('</tr>')
+
+
+        document.write('<tr>')
+        document.write('<td>' + 'Общие расходы  - ' + rashodiT + 'грн.' + '</td>')
+        document.write('</tr>')
+
+
+        document.write('</table>')
+
+
+
+
+
+
+
+
+
+    </script>
+
+
+
+
+
+
+
+</div>
+</body>
+
+
+</html>
+
